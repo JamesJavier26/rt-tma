@@ -14,8 +14,10 @@
         @livewireStyles
 
         <!-- Scripts -->
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
         <script src="{{ asset('js/app.js') }}" defer></script>
+        <script src="{{ mix('js/app.js') }}" defer></script>
     </head>
     <body class="font-sans antialiased">
         <x-jet-banner />
@@ -34,12 +36,11 @@
 
             <!-- Page Content -->
             <main>
-                {{ $slot }}
+            @yield('content')
             </main>
         </div>
 
         @stack('modals')
-
         @livewireScripts
     </body>
 </html>

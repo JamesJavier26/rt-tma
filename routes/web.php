@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Livewire\Task;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,4 +24,5 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
-}); 
+});
+Route::get('/tasks', Task::class);
