@@ -1,7 +1,8 @@
 <?php
 
+use App\Http\Livewire\Tasks;
 use Illuminate\Support\Facades\Route;
-use App\Http\Livewire\Task;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,7 +15,9 @@ use App\Http\Livewire\Task;
 |
 */
 
-Route::redirect('/', 'login');
+Route::get('/', function () {
+    return view('welcome');
+});
 
 Route::middleware([
     'auth:sanctum',
@@ -25,4 +28,5 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
-Route::get('/tasks', Task::class);
+
+Route::get('/tasks', Tasks::class)->name('tasks');
