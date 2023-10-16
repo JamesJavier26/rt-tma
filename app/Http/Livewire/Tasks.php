@@ -54,7 +54,7 @@ class Tasks extends Component
     public function delete($id)
     {
         Task::find($id)->delete();
-        session()->flash('message', 'Category Deleted Successfully.');
+        session()->flash('message', 'Task Deleted Successfully.');
     }
     public function edit($id)
     {
