@@ -44,7 +44,7 @@
                         <div class="mb-4">
                             <label for="priority_level" class="block text-gray-700 text-sm font-bold mb-2">Priority Level:</label>
                             <input type="number" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                            id="priority_level" wire:model="priority_level" min="1" />
+                            id="priority_level" wire:model="priority_level" min="1" max="5" />
                             @error('priority_level') <span class="text-red-500">{{ $message }}</span>@enderror
                         </div>
                     </div>
@@ -53,7 +53,7 @@
                     <span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
                         <button wire:click.prevent="store()" type="button"
                             class="inline-flex items-center px-4 py-2 my-3 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:shadow-outline-gray disabled:opacity-25 transition ease-in-out duration-150">
-                            Save
+                            Create
                         </button>
                     </span>
                     <span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">

@@ -83,9 +83,11 @@ class Tasks extends Component
     }
     private function resetInputFields()
     {
-        $this->title = '';
-        $this->color = '';
-        $this->category_id = '';
+        $this->name = '';
+        $this->description = '';
+        $this->category = '';
+        $this->due_date = '';
+        $this->priority_level = '';
     }
 
     public function sortBy($field)
