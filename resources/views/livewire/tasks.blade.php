@@ -41,6 +41,7 @@
                         <th class="px-4 py-2 border cursor-pointer" wire:click="sortBy('category')">Category</th>
                         <th class="px-4 py-2 border cursor-pointer" wire:click="sortBy('due_date')">Due Date</th>
                         <th class="px-4 py-2 border cursor-pointer" wire:click="sortBy('priority_level')">Priority Level</th>
+                        <th class="px-4 py-2 border cursor-pointer" wire:click="sortByAssignee">Assignee</th>
                         <th class="px-4 py-2 border">Action</th>
                     </tr>
                 </thead>
@@ -53,12 +54,21 @@
                             <td class="px-4 py-2 border">{{ $task->due_date }}</td>
                             <td class="px-4 py-2 border">{{ $task->priority_level }}</td>
                             <td class="px-4 py-2 border">
-                                <button wire:click="edit({{ $task->id }})" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:shadow-outline-gray disabled:opacity-25 transition ease-in-out duration-150">
-                                    Edit
-                                </button>
-                                <button wire:click="delete({{ $task->id }})" class="inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:outline-none focus:border-red-700 focus:shadow-outline-red active:bg-red-600 transition ease-in-out duration-150">
-                                    Delete
-                                </button>
+                                @if($task->user)
+                                    {{ $task->user->name }}
+                                @else
+                                    Not Assigned
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 border">
+                                <div class="flex justify-center">
+                                    <button wire:click="edit({{ $task->id }})" class="inline-flex items-center px-3 py-2 ml-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:shadow-outline-gray disabled:opacity-25 transition ease-in-out duration-150">
+                                        Edit
+                                    </button>
+                                    <button wire:click="delete({{ $task->id }})" class="inline-flex items-center px-3 py-2 ml-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:outline-none focus:border-red-700 focus:shadow-outline-red active:bg-red-600 transition ease-in-out duration-150">
+                                        Delete
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @endforeach

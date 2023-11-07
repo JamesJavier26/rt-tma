@@ -47,6 +47,18 @@
                             id="priority_level" wire:model="priority_level" min="1" max="5" />
                             @error('priority_level') <span class="text-red-500">{{ $message }}</span>@enderror
                         </div>
+
+                        <div class="mb-4">
+                            <label for="assignee" class="block text-gray-700 text-sm font-bold mb-2">Assignee:</label>
+                            <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="assignee" wire:model="assignee">
+                                <option value="">Select Assignee</option>
+                                @foreach($users as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
+                                @error('assignee') <span class="text-red-500">{{ $message }}</span>@enderror
+                        </div>
+                        
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">

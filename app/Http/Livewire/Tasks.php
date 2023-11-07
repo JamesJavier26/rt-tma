@@ -5,6 +5,7 @@ use Livewire\WithPagination;
 
 use Livewire\Component;
 use App\Models\Task;
+use App\Models\User;
 
 class Tasks extends Component
 {
@@ -15,18 +16,36 @@ class Tasks extends Component
     public $sortBy = 'name';
     public $sortDirection = 'asc';
     public $search = '';
+    public $users;
+
+    public function mount()
+    {
+        $this->users = User::pluck('name', 'id');
+    }
+
 
     public function render()
     {
-        $tasks = Task::where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('description', 'like', '%' . $this->search . '%')
-            ->orWhere('category', 'like', '%' . $this->search . '%')
-            ->orWhere('due_date', 'like', '%' . $this->search . '%')
-            ->orWhere('priority_level', 'like', '%' . $this->search . '%')
+        $tasks = Task::with('user')
+            ->leftJoin('users', 'tasks.user_id', '=', 'users.id')
+            ->select('tasks.*', 'users.name as assignee_name')
+            ->where(function($query) {
+                $query->where('tasks.name', 'like', '%' . $this->search . '%')
+                      ->orWhere('tasks.description', 'like', '%' . $this->search . '%')
+                      ->orWhere('tasks.category', 'like', '%' . $this->search . '%')
+                      ->orWhere('tasks.due_date', 'like', '%' . $this->search . '%')
+                      ->orWhere('tasks.priority_level', 'like', '%' . $this->search . '%');
+            })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
 
         return view('livewire.tasks', compact('tasks'));
+    }
+
+    public function sortByAssignee()
+    {
+        $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        $this->sortBy = 'assignee_name'; // Use the alias we defined in the query
     }
 
 
@@ -38,6 +57,7 @@ class Tasks extends Component
             'category' => 'nullable',
             'due_date' => 'nullable|date|after_or_equal:today',
             'priority_level' => 'nullable|integer|min:1',
+            'assignee' => 'nullable|exists:users,id',
         ]);
         Task::updateOrCreate(['id' => $this->task_id], [
             'name' => $this->name,
@@ -45,6 +65,7 @@ class Tasks extends Component
             'category' => $this->category,
             'due_date' => $this->due_date,
             'priority_level' => $this->priority_level,
+            'user_id' => $this->assignee,
         ]);
         session()->flash('message', $this->task_id ? 'Task Updated Successfully.' : 'Task Created Successfully.');
         $this->closeModal();
@@ -65,6 +86,7 @@ class Tasks extends Component
         $this->category = $task->descripcategorytion;
         $this->due_date = $task->due_date;
         $this->priority_level = $task->priority_level;
+        $this->assignee = $task->user_id;
         $this->openModal();
     }
 
@@ -88,6 +110,7 @@ class Tasks extends Component
         $this->category = '';
         $this->due_date = '';
         $this->priority_level = '';
+        $this->assignee = null;
     }
 
     public function sortBy($field)

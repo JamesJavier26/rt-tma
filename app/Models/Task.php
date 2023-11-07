@@ -14,6 +14,11 @@ class Task extends Model
         'description',
         'category',
         'due_date',
-        'priority_level'
+        'priority_level',
+        'user_id'
     ];
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }
