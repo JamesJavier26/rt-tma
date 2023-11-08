@@ -20,14 +20,16 @@ class CreateTasksTable extends Migration
             $table->string('category')->nullable();
             $table->date('due_date')->nullable();
             $table->integer('priority_level')->nullable();
+            $table->text('comment')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
-
+        
             $table->foreign('user_id')
                   ->references('id')
                   ->on('users')
                   ->onDelete('set null');
 
             $table->timestamps();
+            $table->timestamp('completed_at')->nullable();
         });
     }
 

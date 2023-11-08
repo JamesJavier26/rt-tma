@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire;
 use Livewire\WithPagination;
-
 use Livewire\Component;
 use App\Models\Task;
 use App\Models\User;
@@ -17,30 +16,45 @@ class Tasks extends Component
     public $sortDirection = 'asc';
     public $search = '';
     public $users;
+    public $task;   
+    public $isViewOpen = false;
+    public $isCompleted = false;
+    protected $completedTasks;
 
+    
     public function mount()
     {
         $this->users = User::pluck('name', 'id');
     }
 
-
     public function render()
     {
-        $tasks = Task::with('user')
-            ->leftJoin('users', 'tasks.user_id', '=', 'users.id')
-            ->select('tasks.*', 'users.name as assignee_name')
-            ->where(function($query) {
-                $query->where('tasks.name', 'like', '%' . $this->search . '%')
-                      ->orWhere('tasks.description', 'like', '%' . $this->search . '%')
-                      ->orWhere('tasks.category', 'like', '%' . $this->search . '%')
-                      ->orWhere('tasks.due_date', 'like', '%' . $this->search . '%')
-                      ->orWhere('tasks.priority_level', 'like', '%' . $this->search . '%');
-            })
-            ->orderBy($this->sortBy, $this->sortDirection)
-            ->paginate(10);
+        if ($this->isCompleted) {
+            $completedTasks = Task::with('user')
+                ->whereNotNull('completed_at')
+                ->orderBy($this->sortBy, $this->sortDirection)
+                ->paginate(10);
 
-        return view('livewire.tasks', compact('tasks'));
+            return view('livewire.completed', ['completedTasks' => $completedTasks]);
+        } else {
+            $tasks = Task::with('user')
+                ->leftJoin('users', 'tasks.user_id', '=', 'users.id')
+                ->select('tasks.*', 'users.name as assignee_name')
+                ->where(function($query) {
+                    $query->where('tasks.name', 'like', '%' . $this->search . '%')
+                          ->orWhere('tasks.description', 'like', '%' . $this->search . '%')
+                          ->orWhere('tasks.category', 'like', '%' . $this->search . '%')
+                          ->orWhere('tasks.due_date', 'like', '%' . $this->search . '%')
+                          ->orWhere('tasks.priority_level', 'like', '%' . $this->search . '%');
+                })
+                ->whereNull('completed_at')
+                ->orderBy($this->sortBy, $this->sortDirection)
+                ->paginate(10);
+
+            return view('livewire.tasks', compact('tasks'));
+        }
     }
+
 
     public function sortByAssignee()
     {
@@ -83,7 +97,7 @@ class Tasks extends Component
         $this->task_id = $id;
         $this->name = $task->name;
         $this->description = $task->description;
-        $this->category = $task->descripcategorytion;
+        $this->category = $task->category;
         $this->due_date = $task->due_date;
         $this->priority_level = $task->priority_level;
         $this->assignee = $task->user_id;
@@ -127,5 +141,35 @@ class Tasks extends Component
     {
         $this->resetPage();
     }
-   
+
+    public function completeTask($taskId)
+    {
+        $task = Task::find($taskId);
+        $task->completed_at = now();
+        $task->save();
+        $this->isViewOpen = false;
+    }
+
+    public function openCompleted()
+    {
+        $this->isCompleted = true;
+    }
+    
+    public function closeCompleted()
+    {
+        $this->isCompleted = false;
+        $this->completedTasks = null;
+    }
+
+    public function openView($taskId)
+    {
+        $this->task = Task::findOrFail($taskId);
+        $this->isViewOpen = true;
+    }
+
+    public function closeView()
+    {
+        $this->isViewOpen = false;
+    }
+
 }

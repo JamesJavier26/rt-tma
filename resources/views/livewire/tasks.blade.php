@@ -5,7 +5,7 @@
 </x-slot>
 
 <div class="py-12" wire:poll>
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg px-4 py-4">
 
             @if (session()->has('message'))
@@ -31,6 +31,12 @@
 
             @if($isOpen)
                 @include('livewire.create')
+            @endif
+            @if($isViewOpen)
+                @include('livewire.view')
+            @endif
+            @if($isCompleted)
+                @include('livewire.completed')
             @endif
 
             <table class="table-fixed w-full border-collapse border border-gray-300">
@@ -62,10 +68,15 @@
                             </td>
                             <td class="px-4 py-2 border">
                                 <div class="flex justify-center">
-                                    <button wire:click="edit({{ $task->id }})" class="inline-flex items-center px-3 py-2 ml-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:shadow-outline-gray disabled:opacity-25 transition ease-in-out duration-150">
+                                    <button wire:click="openView({{ $task->id }})" class="inline-flex items-center px-2 py-1 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest bg-green-700 hover:bg-green-800 focus:outline-none focus:border-green-900 focus:shadow-outline-green active:bg-green-800 transition ease-in-out duration-150" style="background-color: #38A169;">
+                                        View
+                                    </button>
+                                    <div style="width: 10px;"></div>
+                                    <button wire:click="edit({{ $task->id }})" class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:shadow-outline-gray disabled:opacity-25 transition ease-in-out duration-150">
                                         Edit
                                     </button>
-                                    <button wire:click="delete({{ $task->id }})" class="inline-flex items-center px-3 py-2 ml-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:outline-none focus:border-red-700 focus:shadow-outline-red active:bg-red-600 transition ease-in-out duration-150">
+                                    <div style="width: 10px;"></div>
+                                    <button wire:click="delete({{ $task->id }})" class="inline-flex items-center px-2 py-1 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:outline-none focus:border-red-700 focus:shadow-outline-red active:bg-red-600 transition ease-in-out duration-150">
                                         Delete
                                     </button>
                                 </div>
@@ -74,6 +85,11 @@
                     @endforeach
                 </tbody>
             </table>
+            <div class="flex justify-start mb-4 mt-4">
+                <button wire:click="openCompleted" class="inline-flex items-center px-3 py-2 ml-2 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 focus:outline-none focus:border-green-900 focus:shadow-outline-green disabled:opacity-25 transition ease-in-out duration-150" style="background-color: #38A169;">
+                    Show Completed Tasks
+                </button>
+            </div>
         </div>
     </div>
 </div>
