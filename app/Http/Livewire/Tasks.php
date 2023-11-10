@@ -5,6 +5,9 @@ use Livewire\WithPagination;
 use Livewire\Component;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\Comment;
+use App\Notifications\TaskCommentNotification; // Add this line at the top
+use Illuminate\Support\Facades\Notification; // Add this line at the top
 
 class Tasks extends Component
 {
@@ -16,9 +19,13 @@ class Tasks extends Component
     public $sortDirection = 'asc';
     public $search = '';
     public $users;
-    public $task;   
+    public $task;
+    public $comments;   
     public $isViewOpen = false;
     public $isCompleted = false;
+    public $commentContent = '';
+    public $notifications;
+    public $showNotifications = false;
     protected $completedTasks;
 
     
@@ -148,6 +155,7 @@ class Tasks extends Component
         $task->completed_at = now();
         $task->save();
         $this->isViewOpen = false;
+        session()->flash('message', 'Task Completed.');
     }
 
     public function openCompleted()
@@ -164,6 +172,7 @@ class Tasks extends Component
     public function openView($taskId)
     {
         $this->task = Task::findOrFail($taskId);
+        $this->comments = Comment::where('task_id', $taskId)->with('user')->get();
         $this->isViewOpen = true;
     }
 
@@ -172,4 +181,46 @@ class Tasks extends Component
         $this->isViewOpen = false;
     }
 
+    public function addComment($taskId)
+    {
+        $comment = new Comment([
+            'task_id' => $taskId,
+            'comment' => $this->commentContent,
+            'user_id' => auth()->id(),
+        ]);
+    
+        $comment->save();
+        $this->comments = Comment::where('task_id', $taskId)->with('user')->get();
+        $this->commentContent = '';
+
+        $task = Task::find($taskId);
+        $usersToNotify = $task->users()->where('users.id', '!=', auth()->id())->get();
+        Notification::send($usersToNotify, new TaskCommentNotification($task, $comment));
+
+        $this->comments = Comment::where('task_id', $taskId)->with('user')->get();
+        $this->commentContent = '';
+    }
+
+    public function deleteComment($commentId)
+    {
+        $comment = Comment::find($commentId);
+
+        if ($comment) {
+            $comment->delete();
+            session()->flash('message', 'Comment deleted successfully.');
+        }
+    }
+
+    public function loadNotifications()
+    {
+        $notifications = auth()->user()->unreadNotifications;
+        $this->emit('notificationsLoaded', $notifications);
+    }
+    public function markAsRead($notificationId)
+    {
+        $notification = auth()->user()->unreadNotifications()->findOrFail($notificationId);
+        $notification->markAsRead();
+        $this->loadNotifications();
+    }
+    
 }
