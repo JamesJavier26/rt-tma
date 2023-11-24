@@ -20,6 +20,9 @@ class TaskCommentNotification extends Notification
     {
         $this->task = $task;
         $this->comment = $comment;
+        $this->userName = $comment->user->name;
+        $this->taskId = $task->id;
+        $this->taskName = $task->name;
     }
 
     /**
@@ -30,7 +33,7 @@ class TaskCommentNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail', 'database'];
+        return ['database'];
     }
 
     /**
@@ -39,25 +42,25 @@ class TaskCommentNotification extends Notification
      * @param  mixed  $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toDatabase($notifiable)
     {
-        return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+
+        return [
+            'message' => $this->task->name . ' - ' . $this->comment->comment,
+            'link' => url('/tasks/' . $this->task->id), // Adjust the link as needed
+            'user_name' => $this->comment->user->name,
+            'task_id' => $this->task->id,
+            'task_name' => $this->task->name,
+            'comment' => $this->comment->comment,
+        ];
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
     public function toArray($notifiable)
     {
         return [
-            'task_id' => $this->task->id,
-            'task_name' => $this->task->name,
+            'user_name' => $this->userName,
+            'task_id' => $this->taskId,
+            'task_name' => $this->taskName,
             'comment' => $this->comment->comment,
         ];
     }

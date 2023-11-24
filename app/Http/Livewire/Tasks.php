@@ -6,8 +6,9 @@ use Livewire\Component;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Comment;
-use App\Notifications\TaskCommentNotification; // Add this line at the top
-use Illuminate\Support\Facades\Notification; // Add this line at the top
+use App\Notifications\TaskCommentNotification;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class Tasks extends Component
 {
@@ -26,12 +27,15 @@ class Tasks extends Component
     public $commentContent = '';
     public $notifications;
     public $showNotifications = false;
+    public $unreadNotificationsCount;
     protected $completedTasks;
 
     
     public function mount()
     {
         $this->users = User::pluck('name', 'id');
+
+        $this->unreadNotificationsCount = auth()->user()->unreadNotifications->count();
     }
 
     public function render()
@@ -171,9 +175,14 @@ class Tasks extends Component
 
     public function openView($taskId)
     {
+        Auth::user()->unreadNotifications
+        ->where('data.task_id', $taskId)
+        ->markAsRead();
+        
         $this->task = Task::findOrFail($taskId);
         $this->comments = Comment::where('task_id', $taskId)->with('user')->get();
         $this->isViewOpen = true;
+        $this->closeNotifications();
     }
 
     public function closeView()
@@ -183,24 +192,26 @@ class Tasks extends Component
 
     public function addComment($taskId)
     {
-        $comment = new Comment([
-            'task_id' => $taskId,
-            'comment' => $this->commentContent,
-            'user_id' => auth()->id(),
-        ]);
+        $task = Task::with('user')->find($taskId);
     
-        $comment->save();
-        $this->comments = Comment::where('task_id', $taskId)->with('user')->get();
+        // Check if the comment author is not the task assignee
+        if (auth()->id() !== $task->user->id) {
+            $comment = Comment::create([
+                'task_id' => $taskId,
+                'comment' => $this->commentContent,
+                'user_id' => auth()->id(),
+            ]);
+    
+            // Notify the task assignee
+            Notification::send($task->user, new TaskCommentNotification($task, $comment));
+        }
+    
         $this->commentContent = '';
-
-        $task = Task::find($taskId);
-        $usersToNotify = $task->users()->where('users.id', '!=', auth()->id())->get();
-        Notification::send($usersToNotify, new TaskCommentNotification($task, $comment));
-
-        $this->comments = Comment::where('task_id', $taskId)->with('user')->get();
-        $this->commentContent = '';
+        session()->flash('message', 'Comment added successfully.');
     }
+    
 
+    
     public function deleteComment($commentId)
     {
         $comment = Comment::find($commentId);
@@ -211,16 +222,33 @@ class Tasks extends Component
         }
     }
 
-    public function loadNotifications()
+    public function refreshComments()
     {
-        $notifications = auth()->user()->unreadNotifications;
-        $this->emit('notificationsLoaded', $notifications);
+        $this->comments = Comment::where('task_id', $this->task->id)->with('user')->get();
     }
+
+    public function openNotifications()
+    {
+        $this->showNotifications = true;
+    }
+
+    public function closeNotifications()
+    {
+        $this->showNotifications = false;
+    }
+
+    public function refreshNotifications()
+    {
+        $this->unreadNotificationsCount = Auth::user()->unreadNotifications()->count();
+    }
+
     public function markAsRead($notificationId)
     {
-        $notification = auth()->user()->unreadNotifications()->findOrFail($notificationId);
-        $notification->markAsRead();
-        $this->loadNotifications();
+        $notification = Auth::user()->notifications()->where('id', $notificationId)->first();
+
+        if ($notification) {
+            $notification->markAsRead();
+            $this->refreshNotifications(); // Add this line to force Livewire refresh
+        }
     }
-    
 }
